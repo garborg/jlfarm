@@ -65,10 +65,10 @@ linked_tag () {
 # older_than "$new_tag" "$base_tag"
 older_than () {
   if [[ "$1" != "$2" ]]; then
-    patch2="${2:0:5}"
+    patch2=${2:0:5}
     # pre-release to release
     [[ "$1" == "$patch2" ]] && return 1
-    patch1="${1:0:5}"
+    patch1=${1:0:5}
     # release to pre-release
     [[ "$patch1" == "$2" ]] && return 0
   fi
@@ -77,7 +77,7 @@ older_than () {
 
 # replace_link "$target" "$link"
 replace_link () {
-  link="$2"
+  link=$2
   rm -f "$link"
   ln -s "$1" "$link"
 
@@ -102,7 +102,7 @@ replace_link () {
 replace_link_if_not_older () {
   target_tag=$(extract_tag "$1")
   link_tag=$(linked_tag "$2")
-  respect_lts="${3:-}"
+  respect_lts=${3:-}
   if older_than "$target_tag" "$link_tag"; then
     echo "Leaving '$2' pointing at '$link_tag' rather than replacing with older version '$target_tag'."
   elif [[ -n "$respect_lts" ]] && is_lts "$link_tag" && ! is_lts "$target_tag"; then
@@ -130,8 +130,8 @@ get_linkdir () {
 
 # add_one "$install_version"
 add_one () {
-  version="$1"
-  make_default="$2"
+  version=$1
+  make_default=$2
   force=$3
 
   dir=$(get_dir)
@@ -145,7 +145,7 @@ add_one () {
       echo "^^Failed to find, download, or extract binary for '$version'"
       return 1
     fi
-    name="$(ls -t1 "$dir" | head -n1)"
+    name=$(ls -t1 "$dir" | head -n1)
     bin="$dir/$name/bin/julia"
     if [[ -e "$bin" ]]; then
         replace_link "$bin" "$linkdir/julia-nightly"
@@ -154,9 +154,9 @@ add_one () {
         return 1
     fi
   else
-    patch="${version:0:5}"
-    minor="${version:0:3}"
-    major="${version:0:1}"
+    patch=${version:0:5}
+    minor=${version:0:3}
+    major=${version:0:1}
 
     url="https://julialang-s3.julialang.org/bin/linux/x64/$minor/julia-${version}-linux-x86_64.tar.gz"
     tag_dir="$dir/julia-$version"
@@ -166,7 +166,6 @@ add_one () {
       echo "^^Failed to find, download, or extract binary for '$version'"
       return 1
     fi
-
 
     bin="$tag_dir/bin/julia"
     if is_prerelease "$version"; then
@@ -213,7 +212,7 @@ jlfarm_add () {
 }
 
 remove_one () {
-  tag="$1"
+  tag=$1
 
   dir=$(get_dir)
   linkdir=$(get_linkdir)
@@ -256,14 +255,14 @@ latest_matching_tag () {
         numeric=""
       else
         let len=${#version}-4
-        numeric="${version:0:len}"
+        numeric=${version:0:len}
       fi
       if [[ "$tag" == "$numeric"*"-"* ]] && [[ "$tag" > "$latest_match" ]]; then
-        latest_match="$tag"
+        latest_match=$tag
       fi
     elif [[ ${#tag} = 5 ]]; then
       if [[ "$tag" == "$version"* ]] && [[ "$tag" > "$latest_match" ]]; then
-        latest_match="$tag"
+        latest_match=$tag
       fi
     fi
   done
@@ -286,7 +285,7 @@ all_tags () {
 }
 
 all_dir_tags () {
-  dir="$1"
+  dir=$1
   for path in "$dir/julia-"*; do
     version_from_name "$(basename "$path")"
   done
@@ -296,7 +295,7 @@ latest_pre_tag() {
   latest=""
   for tag in "$@"; do
     if [[ "$tag" == *-* ]] && [[ "$tag" > "$latest" ]]; then
-      latest="$tag"
+      latest=$tag
     fi
   done
   echo "$latest"
@@ -332,7 +331,7 @@ jlfarm_status () {
     fi
   done
 
-  linkdir="$(get_linkdir)"
+  linkdir=$(get_linkdir)
   broken_links=$(find "$linkdir" -iname "julia*" -type l ! -exec test -e {} \; -print)
   if [[ -n "$broken_links" ]]; then
       printf "Broken links in '%s':\n%s\n\n" "$linkdir" "$broken_links"
@@ -341,7 +340,7 @@ jlfarm_status () {
   all_ts=$(all_tags)
 
   # Tracking which versions in dir are on path
-  dir="$(get_dir)"
+  dir=$(get_dir)
   dir_linked_tags=()
 
   # For every julia command on path
@@ -370,9 +369,9 @@ jlfarm_status () {
       else
         info=""
       fi
-      target="$tag"
+      target=$tag
       if $verbose; then
-        target="$(readlink -f "$path")"
+        target=$(readlink -f "$path")
       fi
       # Along with basic stats
       echo "$name @ $path -> $target$info"
