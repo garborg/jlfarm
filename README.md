@@ -62,20 +62,27 @@ Adding versions of julia:
 ```bash
 jlfarm add 1.4.1
 jlfarm add 1.4.1 1.5.0-rc1
+
 # Force `julia` to point at LTS despite currently pointing to a newer version
 jlfarm add --default 1.0.5
+
 # Force `julia` to point at 1.4.1 despite currently pointing at LTS branch
 # (doesn't re-download by default)
 jlfarm add --default 1.4.1
+
 # You could force it to re-download
 jlfarm add --force 1.4.1
 jlfarm add -f 1.4.1
+
 # If for some reason you want to skip gpg signature verification
 jlfarm add --no-verify 1.3.0
+
 # Leave `julia` pointing at 1.4.1 even though 1.4.2 is newer
 jlfarm add --no-default 1.4.2
+
 # Update `julia` to point to 1.4.2 after all
 jlfarm add 1.4.2
+
 # Just for good measure (used below)
 jlfarm add 1.5.0-beta1
 ```
@@ -84,8 +91,8 @@ Removing versions of julia:
 
 ```bash
 # Removes julia-1.0* & julia-1.4.2 links,
-# points julia, julia-1 & julia-1.4 links at 1.4.2, and
-# points julia-pre & julia1.5-pre links at 1.5.0-beta1
+# points julia, julia-1 & julia-1.4 links at 1.4.1, and
+# points julia-pre & julia-1.5-pre links at 1.5.0-beta1
 jlfarm remove 1.0.5 1.4.2 1.5.0-rc1
 ```
 
@@ -118,9 +125,11 @@ Status:
 ```bash
 # See what julia versions are installed where on path,
 # which are clearly outdated,
-# and if there are any broken links in `JULIA_INSTALL`.
+# and if there are any broken links in `JULIA_INSTALL`,
+# or unlinked versions in `JULIA_DOWNLOAD`.
 jlfarm status
 sudo jlfarm status
+
 # Show full target paths
 jlfarm status -v
 ```
