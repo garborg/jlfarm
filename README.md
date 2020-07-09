@@ -1,6 +1,6 @@
-# JLFARM
+# jlfarm
 
-Install and manage versions of Julia
+Install, organize, review, and remove versions of the Julia programming language.
 
 ## Scope (current, plus potential todos)
 
@@ -15,32 +15,6 @@ Install and manage versions of Julia
 - [ ] evaluate version freshness based on what's released rather than what's on computer
     - probably not going to bother until [JuliaLang#33817](https://github.com/JuliaLang/julia/issues/33817) makes the operation cheap
 - [ ] recognize and play nicely with source builds
-
-## Alternatives
-
-[JILL](https://github.com/abelsiqueira/jill) - bash script to install release or prerelease versions on mac and linux
-
-[jill.py](https://github.com/johnnychen94/jill.py) - python package to install julia versions cross-platform
-
-## Motivation and Design
-
-I tried replacing an outdated, adhoc install script with the options listed above, but each missed on some of the following features and expectations:
-
-- Installing nightlies
-- Verifying integrity of signed binaries
-- Installing old versions shouldn't by default silently overwrite links pointing to newer versions
-- Any automatic linking should warn of potentially undesirable behavior, like:
-  - Hiding newer version elsewhere on path
-  - Flipping between an LTS version and a newer version
-- When intalling '[major].[minor]-latest':
-  - Precise installed versions should be obvious when glancing at install dir or symlinks (e.g. is '1.2-latest' actually '1.2.0' or '1.2.3'?)
-  - Having installed '1.2-latest' during '1.2.0' times shouldn't block '1.2-latest' from installing the current latest version, e.g. during '1.2.1' times
-- Removing previously installed versions
-- Help seeing what you might want to remove
-
-I'd be happy for any of these features to make it into `jill` or `jill.py` -- hopefully the implementation here aids in evaluating these features' desirability, design space, and maintence burden.
-
-The last time I did any involved shell scripting, I aimed for posix compatibility -- I'm sure glad to be using bash here, but there's enough logic (more than I was planning) that it'd be nice to be using a 'real' programming language. I'd be more likely to provide simplified update/maintenance funtionality in a language with nice data structures.
 
 ## Usage
 
@@ -133,6 +107,32 @@ sudo jlfarm status
 # Show full target paths
 jlfarm status -v
 ```
+
+## Alternatives
+
+[JILL](https://github.com/abelsiqueira/jill) - bash script to install release or prerelease versions on mac and linux
+
+[jill.py](https://github.com/johnnychen94/jill.py) - python package to install julia versions cross-platform
+
+## Motivation and Design
+
+I tried to integrate the options listed above (under 'Alternatives') into my workflow, but neither hit on all these expectations and features:
+
+- Installing nightlies
+- Verifying integrity of signed binaries
+- Installing old versions shouldn't by default silently overwrite links pointing to newer versions
+- Any automatic linking should warn of potentially undesirable behavior, like:
+  - Hiding newer version elsewhere on path
+  - Flipping between an LTS version and a newer version
+- When intalling '[major].[minor]-latest':
+  - Precise installed versions should be obvious when glancing at install dir or symlinks (e.g. is '1.2-latest' actually '1.2.0' or '1.2.3'?)
+  - Having installed '1.2-latest' during '1.2.0' times shouldn't block '1.2-latest' from installing the current latest version, e.g. during '1.2.1' times
+- Removing previously installed versions
+- Help seeing what you might want to remove
+
+I'd be happy for any of these features to make it into `jill` or `jill.py` -- hopefully the implementation here aids in evaluating these features' desirability, design space, and maintence burden.
+
+The last time I did involved shell scripting, I aimed for posix compatibility -- I'm sure glad to be using bash here, but there's enough logic (more than I was planning) that it'd be nice to be using a 'real' programming language. I'd be more likely to provide simplified update/maintenance functionality in a language with nice data structures.
 
 ## Contributing
 
