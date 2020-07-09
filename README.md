@@ -27,18 +27,18 @@ Install and manage versions of Julia
 I tried replacing an outdated, adhoc install script with the options listed above, but each missed on some of the following features and expectations:
 
 - Installing nightlies
-- Installing an old version shouldn't default to silently overwrite links pointing to newer versions
-- Any automatic linking should warn of any potentially undesirable behavior
+- Verifying integrity of signed binaries
+- Installing old versions shouldn't by default silently overwrite links pointing to newer versions
+- Any automatic linking should warn of potentially undesirable behavior, like:
   - Hiding newer version elsewhere on path
-  - Flipping between LTS version and newer version
+  - Flipping between an LTS version and a newer version
 - When intalling '[major].[minor]-latest':
-  - Precise installed versions should be clear from looking at install dir or symlinks (e.g. is '1.2-latest' actually '1.2.0' or '1.2.3'?)
-  - Installing '1.2-latest' in '1.2.0' times shouldn't block '1.2-latest' from installing '1.2.[patch]' down the road
+  - Precise installed versions should be obvious when glancing at install dir or symlinks (e.g. is '1.2-latest' actually '1.2.0' or '1.2.3'?)
+  - Having installed '1.2-latest' during '1.2.0' times shouldn't block '1.2-latest' from installing the current latest version, e.g. during '1.2.1' times
 - Removing previously installed versions
 - Help seeing what you might want to remove
-- Verifying integrity of signed binaries
 
-I'd be happy for any of these features to make it into `jill` or `jill.py` -- hopefully the implementation here is a vehicle for evaluating these features' desirability, design space, and maintence burden.
+I'd be happy for any of these features to make it into `jill` or `jill.py` -- hopefully the implementation here aids in evaluating these features' desirability, design space, and maintence burden.
 
 The last time I did any involved shell scripting, I aimed for posix compatibility -- I'm sure glad to be using bash here, but there's enough logic (more than I was planning) that it'd be nice to be using a 'real' programming language. I'd be more likely to provide simplified update/maintenance funtionality in a language with nice data structures.
 
