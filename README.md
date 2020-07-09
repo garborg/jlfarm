@@ -10,10 +10,10 @@ Install and manage versions of Julia
 - [x] `add` (download, install, and link) current and historical release, prerelease, and nightly versions of Julia
 - [x] `remove` (delete and remove/replace links) installed versions of Julia
 - [x] check `status` of all versions of Julia on PATH
+- [x] verify gpg signatures of downloads before installing
 - [ ] support specifying 'latest' in place of precise release or pre-release versions
 - [ ] evaluate version freshness based on what's released rather than what's on computer
     - probably not going to bother until [JuliaLang#33817](https://github.com/JuliaLang/julia/issues/33817) makes the operation cheap
-- [ ] verify gpg signatures of downloads before installing
 - [ ] recognize and play nicely with source builds
 
 ## Alternatives
@@ -36,6 +36,7 @@ I tried replacing an outdated, adhoc install script with the options listed abov
   - Installing '1.2-latest' in '1.2.0' times shouldn't block '1.2-latest' from installing '1.2.[patch]' down the road
 - Removing previously installed versions
 - Help seeing what you might want to remove
+- Verifying integrity of signed binaries
 
 I'd be happy for any of these features to make it into `jill` or `jill.py` -- hopefully the implementation here is a vehicle for evaluating these features' desirability, design space, and maintence burden.
 
@@ -69,11 +70,13 @@ jlfarm add --default 1.4.1
 # You could force it to re-download
 jlfarm add --force 1.4.1
 jlfarm add -f 1.4.1
+# If for some reason you want to skip gpg signature verification
+jlfarm add --no-verify 1.3.0
 # Leave `julia` pointing at 1.4.1 even though 1.4.2 is newer
 jlfarm add --no-default 1.4.2
-# Update that link after all
+# Update `julia` to point to 1.4.2 after all
 jlfarm add 1.4.2
-# Just for good measure
+# Just for good measure (used below)
 jlfarm add 1.5.0-beta1
 ```
 
@@ -86,7 +89,7 @@ Removing versions of julia:
 jlfarm remove 1.0.5 1.4.2 1.5.0-rc1
 ```
 
-Controlling paths:
+Overriding install locations:
 
 ```bash
 

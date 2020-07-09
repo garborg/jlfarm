@@ -4,7 +4,7 @@
 # Install and manage versions of Julia
 #
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Terminology -
 #
@@ -16,14 +16,19 @@ set -euo pipefail
 # Current Julia LTS version
 LTS_MINOR=1.0
 
+# is_lts "$tag"
+is_lts () {
+  [[ "$1" == "$LTS_MINOR"* ]]
+}
+
 # is_prerelease "$tag"
 is_prerelease () {
   [[ "$1" =~ ^[[:digit:]]\.[[:digit:]]\.[[:digit:]]-[[:alnum:]]+$ ]]
 }
 
-# is_lts "$tag"
-is_lts () {
-  [[ "$1" == "$LTS_MINOR"* ]]
+# is_nightly "$tag"
+is_nightly () {
+  [[ "$1" =~ ^[[:alnum:]]{10}$ ]]
 }
 
 # version_from_name julia
@@ -128,11 +133,59 @@ get_linkdir () {
   fi
 }
 
+install_unverified () {
+  url=$1
+  dir=$2
+  if ! (curl -fL "$url" | tar -xzC "$dir"); then
+    echo "^^Failed to find, download, or extract binary for '$version'"
+    return 1
+  fi
+}
+
+# https://julialang.org/juliareleases.asc
+# Julia (Binary signing key) <buildbot@julialang.org>
+JULIA_GPG="3673DF529D9049477F76B37566E3C7DC03D6E495"
+
+install_verified () {
+  url=$1
+  dir=$2
+
+  tmp_dir=$(mktemp -d)
+  trap "rm -rf '$tmp_dir'" RETURN
+
+  p_tarball="$tmp_dir/julia.tar.gz"
+
+  if ! command -v gpg > /dev/null; then
+    echo "Install gpg to verify binaries, or specify '--insecure' to skip verification."
+    return 1
+  fi
+  curl -fLo "$p_tarball" "$url" || return 1
+  curl -fLo "$p_tarball.asc" "$url.asc" || return 1
+
+  if gpg -k "$JULIA_GPG" > /dev/null 2>&1; then
+    echo "GPG key for <buildbot@julialang.org> already in keyring. You may want to manually fetch periodically to check for revocations."
+  else
+    echo "Fetching Julia buildbot GPG keys for binary verification:"
+    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$JULIA_GPG"
+  fi
+
+  if gpg --batch --verify "$p_tarball.asc" "$p_tarball" > /dev/null 2>&1; then
+    echo "Binary signature verification successful."
+  else
+    echo "Binary signature verification failed:"
+    gpg --batch --verify "$p_tarball.asc" "$p_tarball"
+    return 1
+  fi
+
+  tar -C "$dir" -xvzf "$p_tarball"
+}
+
 # add_one "$install_version"
 add_one () {
   version=$1
   make_default=$2
   force=$3
+  installer=$4
 
   dir=$(get_dir)
   linkdir=$(get_linkdir)
@@ -141,13 +194,12 @@ add_one () {
 
   if [[ "$version" == "nightly" ]]; then
     url="https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz"
-    if ! (curl -fL "$url" | tar -xz -C "$dir"); then
-      echo "^^Failed to find, download, or extract binary for '$version'"
+    if ! $installer "$url" "$dir"; then
       return 1
     fi
     name=$(ls -t1 "$dir" | head -n1)
     bin="$dir/$name/bin/julia"
-    if [[ -e "$bin" ]]; then
+    if [[ -e "$bin" ]] && is_nightly "$(version_from_name "$name" )"; then
         replace_link "$bin" "$linkdir/julia-nightly"
     else
         echo "Failure to extract nightly tag '$bin'"
@@ -162,8 +214,7 @@ add_one () {
     tag_dir="$dir/julia-$version"
     if [[ -d "$tag_dir" ]] && ! $force; then
       echo "'$tag_dir' already exists, skipping download"
-    elif ! (curl -fL "$url" | tar -xz -C "$dir"); then
-      echo "^^Failed to find, download, or extract binary for '$version'"
+    elif ! $installer "$url" "$dir"; then
       return 1
     fi
 
@@ -194,6 +245,7 @@ jlfarm_add () {
   make_default="auto"
   # whether or not to install over existing directory
   force=false
+  installer=install_verified
   for arg in "$@"; do
     if [[ "$arg" == "--default" ]]; then
       make_default="yes"
@@ -201,6 +253,8 @@ jlfarm_add () {
       make_default="no"
     elif [[ "$arg" == "--force" ]] || [[ "$arg" == "-f" ]]; then
       force=true
+    elif [[ "$arg" == "--no-verify" ]]; then
+      installer=install_unverified
     else
       install_versions+=("$arg")
     fi
@@ -209,7 +263,7 @@ jlfarm_add () {
   failures=()
   for install_version in "${install_versions[@]}"; do
     echo "Adding '$install_version'..."
-    if ! add_one "$install_version" "$make_default" $force; then
+    if ! add_one "$install_version" "$make_default" $force $installer; then
       failures+=("$install_version")
     fi
   done
