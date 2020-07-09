@@ -206,9 +206,17 @@ jlfarm_add () {
     fi
   done
 
+  failures=()
   for install_version in "${install_versions[@]}"; do
-    add_one "$install_version" "$make_default" $force
+    echo "Adding '$install_version'..."
+    if ! add_one "$install_version" "$make_default" $force; then
+      failures+=("$install_version")
+    fi
   done
+  if [[ ${#failures[@]} -ne 0 ]]; then
+    1>&2 echo "Failure adding version(s): ${failures[*]}"
+    return 1
+  fi
 }
 
 remove_one () {
@@ -240,9 +248,18 @@ remove_one () {
 }
 
 jlfarm_remove () {
+  failures=()
   for tag in "$@"; do
-    remove_one "$tag"
+    echo "Removing '$tag'..."
+    if ! remove_one "$tag"; then
+      failures+=("$install_version")
+    fi
   done
+
+  if [[ ${#failures[@]} -ne 0 ]]; then
+    1>&2 echo "Failure removing version(s): ${failures[*]}"
+    return 1
+  fi
 }
 
 latest_matching_tag () {
