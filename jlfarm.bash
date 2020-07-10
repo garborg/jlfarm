@@ -177,7 +177,7 @@ install_verified () {
     return 1
   fi
 
-  tar -C "$dir" -xvzf "$p_tarball"
+  tar -xzC "$dir" -f "$p_tarball"
 }
 
 # add_one "$install_version"
