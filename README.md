@@ -1,3 +1,5 @@
+# DEPRECATED: This predated [JuliaLang/juliaup](https://github.com/JuliaLang/juliaup), which you should use instead.
+
 # jlfarm
 
 Install, organize, review, and remove versions of the Julia programming language.
